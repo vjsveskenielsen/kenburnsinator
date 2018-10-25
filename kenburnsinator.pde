@@ -4,9 +4,11 @@ import java.io.FileFilter;
 import java.io.FilenameFilter;
 */
 import de.looksgood.ani.*;
+import codeanticode.syphon.*;
 import drop.*;
 
 SDrop drop;
+SyphonServer server;
 
 /* STATIC FILE IMPORT
 final FileFilter FOLDER_FILTER = new FileFilter() {
@@ -33,9 +35,11 @@ PVector tpos = new PVector(0,0);
 PGraphics placeholder;
 PImage output;
 ArrayList<PImage> imgs = new ArrayList();
+PGraphics c; //canvas
+int cs_x, cs_y; //canvas scale; stores the scale to fit c into window
 
 void settings() {
-  size(400, 400);
+  size(1024/2, 576/2, P3D);
 }
 
 void setup() {
@@ -44,6 +48,12 @@ void setup() {
   */
   drop = new SDrop(this);
   placeholder = createPlaceholder();
+  c = createGraphics(1920, 1080, P3D);
+  float sx = (float)width/(float)c.width;
+  float sy = (float)height/(float)c.height;
+  cs_x = round(sx*c.width);
+  cs_y = round(sy*c.height);
+  server = new SyphonServer(this, "kenburnsinator");
 
   Ani.init(this);
   Ani.setDefaultEasing(Ani.LINEAR);
@@ -51,11 +61,14 @@ void setup() {
 
 void draw() {
   background(0);
-  imageMode(CENTER);
-
+  c.beginDraw();
+  c.background(255,0,0);
+  c.imageMode(CENTER);
   if(imgs.size() > 0) output = imgs.get(imgs.size()-1);
   else output = placeholder;
-  image(output,pos.x,pos.y);
+  c.image(output,pos.x,pos.y);
+  c.endDraw();
+  image(c, 0,0,cs_x, cs_y);
 }
 
 /* STATIC FILE IMPORT
@@ -102,10 +115,10 @@ void mousePressed() {
 PGraphics createPlaceholder() {
   PGraphics p = createGraphics(1920, 1080);
   p.beginDraw();
-  p.fill(0);
+  p.fill(230);
   p.stroke(255);
   p.strokeWeight(5);
-  p.rect(0,0,width, height);
+  p.rect(0,0,p.width, p.height);
   p.line(0,0, p.width, p.height);
   p.line(p.width, 0, 0, p.height);
   p.endDraw();
@@ -118,8 +131,6 @@ void dropEvent(DropEvent theDropEvent) {
   println("isImage()\t"+theDropEvent.isImage());
   println("isURL()\t"+theDropEvent.isURL());
 
-  // if the dropped object is an image, then
-  // load the image into our PImage.
   if(theDropEvent.isImage()) {
     println("### loading image ...");
     PImage img = theDropEvent.loadImage();
