@@ -1,24 +1,25 @@
-/* STATIC FILE IMPORT
+
 import java.util.List;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
-*/
+
 import de.looksgood.ani.*;
 import codeanticode.syphon.*;
-import drop.*;
 import controlP5.*;
 
 ControlP5 cp5;
+float speed = .2;
 
-SDrop drop;
 SyphonServer server;
 
-/* STATIC FILE IMPORT
-final FileFilter FOLDER_FILTER = new FileFilter() {
-  @ Override boolean accept(final File path) {
-    return path.isDirectory();
-  }
-};
+PVector pos = new PVector(0,0);
+PVector tpos = new PVector(0,0);
+
+PGraphics placeholder;
+PImage output;
+ArrayList<PImage> imgs = new ArrayList();
+PGraphics c; //canvas
+int cs_x, cs_y; //canvas scale; stores the scale to fit c into window
 
 final FilenameFilter PIC_FILTER = new FilenameFilter() {
   final String[] exts = {
@@ -31,27 +32,15 @@ final FilenameFilter PIC_FILTER = new FilenameFilter() {
     return false;
   }
 };
-*/
-PVector pos = new PVector(0,0);
-PVector tpos = new PVector(0,0);
-
-PGraphics placeholder;
-PImage output;
-ArrayList<PImage> imgs = new ArrayList();
-PGraphics c; //canvas
-int cs_x, cs_y; //canvas scale; stores the scale to fit c into window
 
 void settings() {
   size(1024/2, 576/2, P3D);
 }
 
 void setup() {
-  /* STATIC FILE IMPORT
-  initImgs(); //load all available images into imgs
-  */
-  drop = new SDrop(this);
   placeholder = createPlaceholder();
   c = createGraphics(1920, 1080, P3D);
+  c.imageMode(CENTER);
   float sx = (float)width/(float)c.width;
   float sy = (float)height/(float)c.height;
   cs_x = round(sx*c.width);
@@ -60,59 +49,38 @@ void setup() {
   controlSetup();
   Ani.init(this);
   Ani.setDefaultEasing(Ani.LINEAR);
+
 }
 
 void draw() {
   background(0);
   c.beginDraw();
   c.background(255,0,0);
-  c.imageMode(CENTER);
   if(imgs.size() > 0) output = imgs.get(imgs.size()-1);
   else output = placeholder;
-  c.image(output,pos.x,pos.y);
+
+  float s_x, s_y;
+  if (pos.x < .5) s_x = 1.-pos.x;
+  else s_x = pos.x;
+  if (pos.y < .5) s_y = 1.-pos.y;
+  else s_y = pos.y;
+
+  c.image(output,pos.x*c.width,pos.y*c.height, s_x*2.*c.width, s_x*2.*c.height);
   c.endDraw();
-  image(c, 0,0,cs_x, cs_y);
+  image(c, 0+20,0+20,cs_x-40, cs_y-40);
+  server.sendImage(c);
+
+  fill(0, 200);
+  noStroke();
+  rect(width-140, 0, 120, height);
+
 }
 
-/* STATIC FILE IMPORT
-void initImgs() {
-  File dataFolder = dataFile("");
-
-  File[] imgDirs = dataFolder.listFiles(FOLDER_FILTER);
-  imgDirs = (File[]) append(imgDirs, dataFolder);
-
-  println(imgDirs.length, "folders found:");
-  printArray(imgDirs);
-
-  List<File[]> imgPaths = new ArrayList<File[]>();
-
-  for (File dir : imgDirs)
-    imgPaths.add(dir.listFiles(PIC_FILTER));
-
-  println("\nImage paths found for all folders:");
-
-  int totalLength = 0;
-  for (File[] paths : imgPaths) {
-    totalLength += paths.length;
-    println();
-    printArray(paths);
-  }
-
-  println("Total images found in all subfolders:", totalLength);
-
-  imgs = new PImage[totalLength];
-  int idx = 0;
-  for (File[] paths : imgPaths)
-    for (File f : paths)
-      imgs[idx++] = loadImage(f.getPath());
-}
-*/
-
-void mousePressed() {
-  tpos.x = mouseX;
-  tpos.y = mouseY;
-  Ani.to(pos, 3.0f, "x", tpos.x);
-  Ani.to(pos, 3.0f, "y", tpos.y);
+void animate(PVector in) {
+  tpos.x = in.x;
+  tpos.y = in.y;
+  Ani.to(pos, speed, "x", tpos.x);
+  Ani.to(pos, speed, "y", tpos.y);
 }
 
 PGraphics createPlaceholder() {
@@ -126,17 +94,4 @@ PGraphics createPlaceholder() {
   p.line(p.width, 0, 0, p.height);
   p.endDraw();
   return p;
-}
-
-void dropEvent(DropEvent theDropEvent) {
-  println("");
-  println("isFile()\t"+theDropEvent.isFile());
-  println("isImage()\t"+theDropEvent.isImage());
-  println("isURL()\t"+theDropEvent.isURL());
-
-  if(theDropEvent.isImage()) {
-    println("### loading image ...");
-    PImage img = theDropEvent.loadImage();
-    imgs.add(img);
-  }
 }
