@@ -6,9 +6,9 @@ import java.io.FilenameFilter;
 import de.looksgood.ani.*;
 import codeanticode.syphon.*;
 import drop.*;
-import controlP5.*;
+//import controlP5.*;
 
-ControlP5 cp5;
+//ControlP5 cp5;
 
 SDrop drop;
 SyphonServer server;
@@ -32,14 +32,16 @@ final FilenameFilter PIC_FILTER = new FilenameFilter() {
   }
 };
 */
-PVector pos = new PVector(0,0);
-PVector tpos = new PVector(0,0);
+PVector pos = new PVector(0,0,1);
+PVector tpos = new PVector(0,0,1);
 
 PGraphics placeholder;
 PImage output;
 ArrayList<PImage> imgs = new ArrayList();
 PGraphics c; //canvas
 int cs_x, cs_y; //canvas scale; stores the scale to fit c into window
+
+float speed;
 
 void settings() {
   size(1024/2, 576/2, P3D);
@@ -57,7 +59,7 @@ void setup() {
   cs_x = round(sx*c.width);
   cs_y = round(sy*c.height);
   server = new SyphonServer(this, "kenburnsinator");
-  controlSetup();
+  //controlSetup();
   Ani.init(this);
   Ani.setDefaultEasing(Ani.LINEAR);
 }
@@ -69,9 +71,10 @@ void draw() {
   c.imageMode(CENTER);
   if(imgs.size() > 0) output = imgs.get(imgs.size()-1);
   else output = placeholder;
-  c.image(output,pos.x,pos.y);
+  c.image(output,pos.x,pos.y, output.width*pos.z, output.height*pos.z);
   c.endDraw();
   image(c, 0,0,cs_x, cs_y);
+  println(imgs.size());
 }
 
 /* STATIC FILE IMPORT
@@ -109,10 +112,16 @@ void initImgs() {
 */
 
 void mousePressed() {
-  tpos.x = mouseX;
-  tpos.y = mouseY;
-  Ani.to(pos, 3.0f, "x", tpos.x);
-  Ani.to(pos, 3.0f, "y", tpos.y);
+  animate(new PVector(mouseX, mouseY, random(1, 2)));
+}
+
+void animate(PVector in) {
+  tpos.x = in.x;
+  tpos.y = in.y;
+  tpos.z = in.z;
+  Ani.to(pos, speed, "x", tpos.x);
+  Ani.to(pos, speed, "y", tpos.y);
+  Ani.to(pos, speed, "z", tpos.z);
 }
 
 PGraphics createPlaceholder() {
