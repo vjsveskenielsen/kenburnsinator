@@ -1,4 +1,3 @@
-/*
 void controlSetup() {
   cp5 = new ControlP5(this);
   int xoff = width-160, yoff = 20;
@@ -34,4 +33,3 @@ void speed(float value) {
 public void random() {
   animate(new PVector(random(0,1)*c.width, random(0,1)*c.height, random(1, 2)));
 }
-*/

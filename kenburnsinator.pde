@@ -1,37 +1,13 @@
-/* STATIC FILE IMPORT
-import java.util.List;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
-*/
 import de.looksgood.ani.*;
-import codeanticode.syphon.*;
+//import codeanticode.syphon.*;
 import drop.*;
-//import controlP5.*;
+import controlP5.*;
 
-//ControlP5 cp5;
+ControlP5 cp5;
 
 SDrop drop;
-SyphonServer server;
+//SyphonServer server;
 
-/* STATIC FILE IMPORT
-final FileFilter FOLDER_FILTER = new FileFilter() {
-  @ Override boolean accept(final File path) {
-    return path.isDirectory();
-  }
-};
-
-final FilenameFilter PIC_FILTER = new FilenameFilter() {
-  final String[] exts = {
-    ".png", ".jpg", ".jpeg", ".gif"
-  };
-
-  @ Override boolean accept(final File path, String name) {
-    name = name.toLowerCase();
-    for (final String ext : exts)  if (name.endsWith(ext))  return true;
-    return false;
-  }
-};
-*/
 PVector pos = new PVector(0,0,1);
 PVector tpos = new PVector(0,0,1);
 
@@ -48,18 +24,15 @@ void settings() {
 }
 
 void setup() {
-  /* STATIC FILE IMPORT
-  initImgs(); //load all available images into imgs
-  */
-  drop = new SDrop(this);
+  drop = new SDrop((Component)this.surface.getNative(), this);
   placeholder = createPlaceholder();
-  c = createGraphics(1920, 1080, P3D);
+  c = createGraphics(1920, 1080);
   float sx = (float)width/(float)c.width;
   float sy = (float)height/(float)c.height;
   cs_x = round(sx*c.width);
   cs_y = round(sy*c.height);
-  server = new SyphonServer(this, "kenburnsinator");
-  //controlSetup();
+  //server = new SyphonServer(this, "kenburnsinator");
+  controlSetup();
   Ani.init(this);
   Ani.setDefaultEasing(Ani.LINEAR);
 }
@@ -76,40 +49,6 @@ void draw() {
   image(c, 0,0,cs_x, cs_y);
   println(imgs.size());
 }
-
-/* STATIC FILE IMPORT
-void initImgs() {
-  File dataFolder = dataFile("");
-
-  File[] imgDirs = dataFolder.listFiles(FOLDER_FILTER);
-  imgDirs = (File[]) append(imgDirs, dataFolder);
-
-  println(imgDirs.length, "folders found:");
-  printArray(imgDirs);
-
-  List<File[]> imgPaths = new ArrayList<File[]>();
-
-  for (File dir : imgDirs)
-    imgPaths.add(dir.listFiles(PIC_FILTER));
-
-  println("\nImage paths found for all folders:");
-
-  int totalLength = 0;
-  for (File[] paths : imgPaths) {
-    totalLength += paths.length;
-    println();
-    printArray(paths);
-  }
-
-  println("Total images found in all subfolders:", totalLength);
-
-  imgs = new PImage[totalLength];
-  int idx = 0;
-  for (File[] paths : imgPaths)
-    for (File f : paths)
-      imgs[idx++] = loadImage(f.getPath());
-}
-*/
 
 void mousePressed() {
   animate(new PVector(mouseX, mouseY, random(1, 2)));
