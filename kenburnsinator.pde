@@ -6,6 +6,9 @@ import java.io.FilenameFilter;
 import de.looksgood.ani.*;
 import codeanticode.syphon.*;
 import drop.*;
+import controlP5.*;
+
+ControlP5 cp5;
 
 SDrop drop;
 SyphonServer server;
@@ -54,7 +57,7 @@ void setup() {
   cs_x = round(sx*c.width);
   cs_y = round(sy*c.height);
   server = new SyphonServer(this, "kenburnsinator");
-
+  controlSetup();
   Ani.init(this);
   Ani.setDefaultEasing(Ani.LINEAR);
 }
