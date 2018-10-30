@@ -20,21 +20,39 @@ void controlSetup() {
     .setSize(s_width, s_height)
     .setTriggerEvent(Bang.RELEASE)
     ;
+  cp5.getController("random").getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
 
-  yoff += 50;
+  yoff += 25;
   cp5.addBang("loadImageFolder")
     .setPosition(xoff, yoff)
     .setSize(s_width, s_height)
     .setTriggerEvent(Bang.RELEASE)
     .setLabel("load image folder")
     ;
+    cp5.getController("loadImageFolder").getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
 
-  yoff += 50;
+    yoff += 25;
+  cp5.addBang("purgeImgs")
+    .setPosition(xoff, yoff)
+    .setSize(s_width, s_height)
+    .setTriggerEvent(Bang.RELEASE)
+    .setLabel("purge all imgs")
+    ;
+    cp5.getController("purgeImgs").getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
+
+  yoff += 25;
   cp5.addTextfield("portValue")
     .setPosition(xoff, yoff)
     .setSize(s_width, s_height)
     .setAutoClear(false)
   ;
+
+  yoff += 50;
+  cp5.addToggle("syphonInput")
+   .setPosition(xoff, yoff)
+   .setSize(50,20)
+   .setLabel("syphon / images")
+   ;
 }
 
 void speed(float value) {
@@ -58,6 +76,7 @@ void folderSelected(File selection) {
 }
 
 public void loadImgs(File dir) {
+  if (imgs != null) purgeImgs();
   List<File[]> imgPaths = new ArrayList<File[]>();
   imgPaths.add(dir.listFiles(PIC_FILTER));
 
@@ -82,6 +101,10 @@ public void loadImgs(File dir) {
       imgs.add(loadImage(f.getPath()));
       rect(width/totalLength*progress,0, width/totalLength, 10);
     }
+}
+
+public void purgeImgs(){
+  imgs.clear();
 }
 
 public void portValue(String theText) {

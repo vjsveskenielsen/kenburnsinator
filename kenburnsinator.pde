@@ -18,12 +18,17 @@ int port = 9999;
 ControlP5 cp5;
 float speed = .2;
 
+String syphon_input_app = "VDMX5", syphon_input_name = "Main Output";
+boolean syphonInput = false;
 SyphonServer server;
+SyphonClient client;
+
+int short_side, long_side;
 
 PVector pos = new PVector(0,0);
 PVector tpos = new PVector(0,0);
 
-PGraphics placeholder;
+PGraphics placeholder, syphon;
 PImage output;
 ArrayList<PImage> imgs = new ArrayList();
 PGraphics c; //canvas
@@ -54,7 +59,7 @@ void setup() {
   cs_x = round(sx*c.width);
   cs_y = round(sy*c.height);
   server = new SyphonServer(this, "kenburnsinator");
-
+  client = new SyphonClient(this, syphon_input_app, syphon_input_name);
   controlSetup();
   updateOSC();
   Ani.init(this);
@@ -68,6 +73,8 @@ void draw() {
   c.background(255,0,0);
   if(imgs.size() > 0) output = imgs.get(imgs.size()-1);
   else output = placeholder;
+  calcSides(output);
+  println(short_side, long_side);
 
   float s_x, s_y;
   if (pos.x < .5) s_x = 1.-pos.x;
@@ -75,7 +82,7 @@ void draw() {
   if (pos.y < .5) s_y = 1.-pos.y;
   else s_y = pos.y;
 
-  c.image(output,pos.x*c.width,pos.y*c.height, s_x*2.*output.width, s_x*2.*output.height);
+  c.image(output,pos.x*c.width,pos.y*c.height, 2.*output.width, s_x*2.*output.height);
   c.endDraw();
   image(c, 0+20,0+20,cs_x-40, cs_y-40);
   server.sendImage(c);
@@ -96,7 +103,7 @@ void animate(PVector in) {
 PGraphics createPlaceholder() {
   PGraphics p = createGraphics(1920, 1080);
   p.beginDraw();
-  p.fill(230);
+  p.fill(200);
   p.stroke(255);
   p.strokeWeight(5);
   p.rect(0,0,p.width, p.height);
@@ -110,7 +117,6 @@ void oscEvent(OscMessage theOscMessage) {
   String str_in[] = split(theOscMessage.addrPattern(), '/');
   println(str_in);
   if (str_in[1].equals("kenburnsinator")) {
-
     if (str_in[2].equals("random")) {
       random();
     } else if (str_in[2].equals("speed") && theOscMessage.checkTypetag("f")) {
@@ -126,4 +132,16 @@ void updateOSC() {
   ipAdress = Server.ip();
   oscP5 = new OscP5(this, port);
   cp5.getController("portValue").setLabel("port: " + port);
+}
+
+void calcSides(PImage p) {
+  int a, b;
+  if (p.width >= p.height) {
+    short_side = p.height;
+    long_side = p.width;
+  }
+  else {
+    short_side = p.width;
+    long_side = p.height;
+  }
 }

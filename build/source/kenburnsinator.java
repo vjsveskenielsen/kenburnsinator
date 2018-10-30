@@ -44,12 +44,17 @@ int port = 9999;
 ControlP5 cp5;
 float speed = .2f;
 
+String syphon_input_app = "VDMX5", syphon_input_name = "Main Output";
+boolean syphonInput = false;
 SyphonServer server;
+SyphonClient client;
+
+int short_side, long_side;
 
 PVector pos = new PVector(0,0);
 PVector tpos = new PVector(0,0);
 
-PGraphics placeholder;
+PGraphics placeholder, syphon;
 PImage output;
 ArrayList<PImage> imgs = new ArrayList();
 PGraphics c; //canvas
@@ -80,7 +85,7 @@ public void setup() {
   cs_x = round(sx*c.width);
   cs_y = round(sy*c.height);
   server = new SyphonServer(this, "kenburnsinator");
-
+  client = new SyphonClient(this, syphon_input_app, syphon_input_name);
   controlSetup();
   updateOSC();
   Ani.init(this);
@@ -94,6 +99,8 @@ public void draw() {
   c.background(255,0,0);
   if(imgs.size() > 0) output = imgs.get(imgs.size()-1);
   else output = placeholder;
+  calcSides(output);
+  println(short_side, long_side);
 
   float s_x, s_y;
   if (pos.x < .5f) s_x = 1.f-pos.x;
@@ -122,7 +129,7 @@ public void animate(PVector in) {
 public PGraphics createPlaceholder() {
   PGraphics p = createGraphics(1920, 1080);
   p.beginDraw();
-  p.fill(230);
+  p.fill(200);
   p.stroke(255);
   p.strokeWeight(5);
   p.rect(0,0,p.width, p.height);
@@ -136,7 +143,6 @@ public void oscEvent(OscMessage theOscMessage) {
   String str_in[] = split(theOscMessage.addrPattern(), '/');
   println(str_in);
   if (str_in[1].equals("kenburnsinator")) {
-
     if (str_in[2].equals("random")) {
       random();
     } else if (str_in[2].equals("speed") && theOscMessage.checkTypetag("f")) {
@@ -152,6 +158,18 @@ public void updateOSC() {
   ipAdress = Server.ip();
   oscP5 = new OscP5(this, port);
   cp5.getController("portValue").setLabel("port: " + port);
+}
+
+public void calcSides(PImage p) {
+  int a, b;
+  if (p.width >= p.height) {
+    short_side = p.height;
+    long_side = p.width;
+  }
+  else {
+    short_side = p.width;
+    long_side = p.height;
+  }
 }
 public void controlSetup() {
   cp5 = new ControlP5(this);
@@ -175,21 +193,39 @@ public void controlSetup() {
     .setSize(s_width, s_height)
     .setTriggerEvent(Bang.RELEASE)
     ;
+  cp5.getController("random").getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
 
-  yoff += 50;
+  yoff += 25;
   cp5.addBang("loadImageFolder")
     .setPosition(xoff, yoff)
     .setSize(s_width, s_height)
     .setTriggerEvent(Bang.RELEASE)
     .setLabel("load image folder")
     ;
+    cp5.getController("loadImageFolder").getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
 
-  yoff += 50;
+    yoff += 25;
+  cp5.addBang("purgeImgs")
+    .setPosition(xoff, yoff)
+    .setSize(s_width, s_height)
+    .setTriggerEvent(Bang.RELEASE)
+    .setLabel("purge all imgs")
+    ;
+    cp5.getController("purgeImgs").getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER).setPaddingX(0);
+
+  yoff += 25;
   cp5.addTextfield("portValue")
     .setPosition(xoff, yoff)
     .setSize(s_width, s_height)
     .setAutoClear(false)
   ;
+
+  yoff += 50;
+  cp5.addToggle("syphonInput")
+   .setPosition(xoff, yoff)
+   .setSize(50,20)
+   .setLabel("syphon / images")
+   ;
 }
 
 public void speed(float value) {
@@ -213,6 +249,7 @@ public void folderSelected(File selection) {
 }
 
 public void loadImgs(File dir) {
+  if (imgs != null) purgeImgs();
   List<File[]> imgPaths = new ArrayList<File[]>();
   imgPaths.add(dir.listFiles(PIC_FILTER));
 
@@ -237,6 +274,10 @@ public void loadImgs(File dir) {
       imgs.add(loadImage(f.getPath()));
       rect(width/totalLength*progress,0, width/totalLength, 10);
     }
+}
+
+public void purgeImgs(){
+  imgs.clear();
 }
 
 public void portValue(String theText) {
