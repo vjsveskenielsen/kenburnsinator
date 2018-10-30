@@ -28,6 +28,13 @@ void controlSetup() {
     .setTriggerEvent(Bang.RELEASE)
     .setLabel("load image folder")
     ;
+
+  yoff += 50;
+  cp5.addTextfield("portValue")
+    .setPosition(xoff, yoff)
+    .setSize(s_width, s_height)
+    .setAutoClear(false)
+  ;
 }
 
 void speed(float value) {
@@ -68,11 +75,26 @@ public void loadImgs(File dir) {
   fill(200);
   noStroke();
   rect(0,0, width, 10);
-fill(255);
+  fill(255);
   int progress = 0;
   for (File[] paths : imgPaths)
     for (File f : paths) {
       imgs.add(loadImage(f.getPath()));
       rect(width/totalLength*progress,0, width/totalLength, 10);
     }
+}
+
+public void portValue(String theText) {
+
+  char[] ints = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  char[] input = theText.toCharArray();
+
+  int check = 0;
+  for (char ch : input) {
+    for (char i : ints) {
+      if (ch == i) check++;
+    }
+  }
+  if (input.length == check && check < 6) port = Integer.parseInt(theText);
+  updateOSC();
 }

@@ -8,8 +8,12 @@ import codeanticode.syphon.*;
 import controlP5.*;
 import oscP5.*;
 import netP5.*;
+import processing.net.*;
 
 OscP5 oscP5;
+Server localServer;
+String ipAdress;
+int port = 9999;
 
 ControlP5 cp5;
 float speed = .2;
@@ -51,8 +55,8 @@ void setup() {
   cs_y = round(sy*c.height);
   server = new SyphonServer(this, "kenburnsinator");
 
-  oscP5 = new OscP5(this, 9999);
   controlSetup();
+  updateOSC();
   Ani.init(this);
   Ani.setDefaultEasing(Ani.LINEAR);
 
@@ -104,6 +108,7 @@ PGraphics createPlaceholder() {
 
 void oscEvent(OscMessage theOscMessage) {
   String str_in[] = split(theOscMessage.addrPattern(), '/');
+  println(str_in);
   if (str_in[1].equals("svesketrigger")) {
     /*
     if (str_in[2].equals("linewidth") && theOscMessage.checkTypetag("f")) {
@@ -122,15 +127,8 @@ void oscEvent(OscMessage theOscMessage) {
   }
 }
 
-void makeOSC() {
-  int p1 = (int)cp5.getController("n1").getValue();
-  int p2 = (int)cp5.getController("n2").getValue();
-  int p3 = (int)cp5.getController("n3").getValue();
-  int p4 = (int)cp5.getController("n4").getValue();
-  oscP5 = new OscP5(this, p1*1000 + p2*100 + p3*10 + p4);
-}
-
-void updateIP() {
+void updateOSC() {
   ipAdress = Server.ip();
-  cp5.getController("ipUpdateBang").setLabel("local IP is: " + ipAdress);
+  oscP5 = new OscP5(this, port);
+  cp5.getController("portValue").setLabel("port: " + port);
 }

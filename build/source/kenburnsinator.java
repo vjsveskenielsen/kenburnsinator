@@ -9,6 +9,9 @@ import java.io.FilenameFilter;
 import de.looksgood.ani.*; 
 import codeanticode.syphon.*; 
 import controlP5.*; 
+import oscP5.*; 
+import netP5.*; 
+import processing.net.*; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -29,6 +32,14 @@ public class kenburnsinator extends PApplet {
 
 
 
+
+
+
+
+OscP5 oscP5;
+Server localServer;
+String ipAdress;
+int port = 9999;
 
 ControlP5 cp5;
 float speed = .2f;
@@ -69,7 +80,9 @@ public void setup() {
   cs_x = round(sx*c.width);
   cs_y = round(sy*c.height);
   server = new SyphonServer(this, "kenburnsinator");
+
   controlSetup();
+  updateOSC();
   Ani.init(this);
   Ani.setDefaultEasing(Ani.LINEAR);
 
@@ -118,6 +131,33 @@ public PGraphics createPlaceholder() {
   p.endDraw();
   return p;
 }
+
+public void oscEvent(OscMessage theOscMessage) {
+  String str_in[] = split(theOscMessage.addrPattern(), '/');
+  println(str_in);
+  if (str_in[1].equals("svesketrigger")) {
+    /*
+    if (str_in[2].equals("linewidth") && theOscMessage.checkTypetag("f")) {
+      float value = theOscMessage.get(0).floatValue();
+      float max = cp5.getController("linewidth").getMax();
+      cp5.getController("linewidth").setValue(value*max);
+
+    } else if (str_in[2].equals("speed") && theOscMessage.checkTypetag("f")) {
+      float value = theOscMessage.get(0).floatValue();
+      float max = cp5.getController("speed").getMax();
+      cp5.getController("speed").setValue(value*max);
+    } else {
+      chooseAnimation(str_in[2]);
+    }
+    */
+  }
+}
+
+public void updateOSC() {
+  ipAdress = Server.ip();
+  oscP5 = new OscP5(this, port);
+  cp5.getController("portValue").setLabel("port: " + port);
+}
 public void controlSetup() {
   cp5 = new ControlP5(this);
   int xoff = width-120, yoff = 20;
@@ -148,6 +188,13 @@ public void controlSetup() {
     .setTriggerEvent(Bang.RELEASE)
     .setLabel("load image folder")
     ;
+
+  yoff += 50;
+  cp5.addTextfield("portValue")
+    .setPosition(xoff, yoff)
+    .setSize(s_width, s_height)
+    .setAutoClear(false)
+  ;
 }
 
 public void speed(float value) {
@@ -188,13 +235,28 @@ public void loadImgs(File dir) {
   fill(200);
   noStroke();
   rect(0,0, width, 10);
-fill(255);
+  fill(255);
   int progress = 0;
   for (File[] paths : imgPaths)
     for (File f : paths) {
       imgs.add(loadImage(f.getPath()));
       rect(width/totalLength*progress,0, width/totalLength, 10);
     }
+}
+
+public void portValue(String theText) {
+
+  char[] ints = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  char[] input = theText.toCharArray();
+
+  int check = 0;
+  for (char ch : input) {
+    for (char i : ints) {
+      if (ch == i) check++;
+    }
+  }
+  if (input.length == check && check < 6) port = Integer.parseInt(theText);
+  updateOSC();
 }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "kenburnsinator" };
