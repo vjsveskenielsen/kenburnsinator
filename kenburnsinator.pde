@@ -109,21 +109,16 @@ PGraphics createPlaceholder() {
 void oscEvent(OscMessage theOscMessage) {
   String str_in[] = split(theOscMessage.addrPattern(), '/');
   println(str_in);
-  if (str_in[1].equals("svesketrigger")) {
-    /*
-    if (str_in[2].equals("linewidth") && theOscMessage.checkTypetag("f")) {
-      float value = theOscMessage.get(0).floatValue();
-      float max = cp5.getController("linewidth").getMax();
-      cp5.getController("linewidth").setValue(value*max);
+  if (str_in[1].equals("kenburnsinator")) {
 
+    if (str_in[2].equals("random")) {
+      random();
     } else if (str_in[2].equals("speed") && theOscMessage.checkTypetag("f")) {
       float value = theOscMessage.get(0).floatValue();
       float max = cp5.getController("speed").getMax();
       cp5.getController("speed").setValue(value*max);
-    } else {
-      chooseAnimation(str_in[2]);
     }
-    */
+
   }
 }
 
