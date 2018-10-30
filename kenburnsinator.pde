@@ -6,6 +6,10 @@ import java.io.FilenameFilter;
 import de.looksgood.ani.*;
 import codeanticode.syphon.*;
 import controlP5.*;
+import oscP5.*;
+import netP5.*;
+
+OscP5 oscP5;
 
 ControlP5 cp5;
 float speed = .2;
@@ -46,6 +50,8 @@ void setup() {
   cs_x = round(sx*c.width);
   cs_y = round(sy*c.height);
   server = new SyphonServer(this, "kenburnsinator");
+
+  oscP5 = new OscP5(this, 9999);
   controlSetup();
   Ani.init(this);
   Ani.setDefaultEasing(Ani.LINEAR);
@@ -65,7 +71,7 @@ void draw() {
   if (pos.y < .5) s_y = 1.-pos.y;
   else s_y = pos.y;
 
-  c.image(output,pos.x*c.width,pos.y*c.height, s_x*2.*c.width, s_x*2.*c.height);
+  c.image(output,pos.x*c.width,pos.y*c.height, s_x*2.*output.width, s_x*2.*output.height);
   c.endDraw();
   image(c, 0+20,0+20,cs_x-40, cs_y-40);
   server.sendImage(c);
@@ -94,4 +100,37 @@ PGraphics createPlaceholder() {
   p.line(p.width, 0, 0, p.height);
   p.endDraw();
   return p;
+}
+
+void oscEvent(OscMessage theOscMessage) {
+  String str_in[] = split(theOscMessage.addrPattern(), '/');
+  if (str_in[1].equals("svesketrigger")) {
+    /*
+    if (str_in[2].equals("linewidth") && theOscMessage.checkTypetag("f")) {
+      float value = theOscMessage.get(0).floatValue();
+      float max = cp5.getController("linewidth").getMax();
+      cp5.getController("linewidth").setValue(value*max);
+
+    } else if (str_in[2].equals("speed") && theOscMessage.checkTypetag("f")) {
+      float value = theOscMessage.get(0).floatValue();
+      float max = cp5.getController("speed").getMax();
+      cp5.getController("speed").setValue(value*max);
+    } else {
+      chooseAnimation(str_in[2]);
+    }
+    */
+  }
+}
+
+void makeOSC() {
+  int p1 = (int)cp5.getController("n1").getValue();
+  int p2 = (int)cp5.getController("n2").getValue();
+  int p3 = (int)cp5.getController("n3").getValue();
+  int p4 = (int)cp5.getController("n4").getValue();
+  oscP5 = new OscP5(this, p1*1000 + p2*100 + p3*10 + p4);
+}
+
+void updateIP() {
+  ipAdress = Server.ip();
+  cp5.getController("ipUpdateBang").setLabel("local IP is: " + ipAdress);
 }
